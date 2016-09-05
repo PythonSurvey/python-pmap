@@ -3,7 +3,8 @@ import contextlib
 import itertools
 import multiprocessing
 import threading
-import Queue
+import queue # quene for python3, Queue for python2
+import traceback
 
 _num_cores = multiprocessing.cpu_count
 
@@ -25,7 +26,7 @@ def seque(seq):
     thread in a queue.
     """
     DONE = "_________XXXX___________DONE_ZZ"
-    q = Queue.Queue()
+    q = queue.Queue()
 
     def wrapper():
         for el in seq:
@@ -56,6 +57,7 @@ class Future(object):
             try:
                 self.value = func()
             except Exception as e:
+                traceback.print_exc()
                 self.exc_info = sys.exc_info()
             finally:
                 self.done.set()
@@ -67,7 +69,7 @@ class Future(object):
     def deref(self):
         self.done.wait()
         if self.exc_info:
-            raise self.exc_info[0], self.exc_info[1], self.exc_info[2]
+            raise self.exc_info
         return self.value
 
 
